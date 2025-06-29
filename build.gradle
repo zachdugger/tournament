@@ -1,0 +1,129 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+group = 'com.blissy.tournaments'
+version = '1.16.5-1.0.0'
+archivesBaseName = 'Tournaments'
+
+// Use traditional Java compatibility settings - remove toolchain
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+minecraft {
+    mappings channel: 'official', version: '1.16.5'
+
+    runs {
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            jvmArgs '-Xmx3G', '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC'
+
+            mods {
+                tournaments {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            jvmArgs '-Xmx3G', '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC'
+
+            mods {
+                tournaments {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Spigot'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    // Updated PaperMC repository URL
+    maven {
+        name = 'PaperMC'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        name = "EssentialsX"
+        url = "https://repo.essentialsx.net/releases/"
+    }
+    // Jitpack as fallback for dependencies
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.39'
+
+    // Local Pixelmon jar
+    //compileOnly files('libs/pixelmon-1.16.5-9.1.13-universal.jar')
+    implementation fg.deobf(files('libs/Pixelmon-1.16.5-9.1.13-universal.jar'))
+
+    // Spigot dependency
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+
+    // Essentials - we're using a different approach now
+    // We'll create a placeholder jar if needed
+    // If you have access to Essentials jar directly, place it in the libs folder
+    // and uncomment the line below:
+    // compileOnly files('libs/EssentialsX-2.19.0.jar')
+}
+
+// Process resources
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching('META-INF/mods.toml') {
+        expand(
+                'version': project.version,
+                'file': [jarVersion: project.version]
+        )
+    }
+}
+
+// Create a sources jar
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title": "Tournaments",
+                "Specification-Vendor": "Blissy",
+                "Specification-Version": "1",
+                "Implementation-Title": "Tournaments",
+                "Implementation-Version": project.version,
+                "Implementation-Vendor": "Blissy",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+// Add sources jar to the build
+artifacts {
+    archives sourcesJar
+}

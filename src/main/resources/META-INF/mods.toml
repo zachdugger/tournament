@@ -1,0 +1,34 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="tournaments"
+version="${file.jarVersion}"
+displayName="Tournaments"
+authors="Blissy"
+description='''
+A tournament mod for Pixelmon.
+'''
+side="SERVER"
+
+[[dependencies.tournaments]]
+modId="forge"
+mandatory=true
+versionRange="[36.2,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.tournaments]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.5,1.17)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.tournaments]]
+modId="pixelmon"
+mandatory=true
+versionRange="[9.1.0,)"
+ordering="AFTER"
+side="BOTH"

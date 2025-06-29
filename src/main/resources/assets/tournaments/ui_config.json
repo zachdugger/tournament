@@ -1,0 +1,299 @@
+{
+  "main_screen": {
+    "title": "Tournament Hub",
+    "title_item": "minecraft:nether_star",
+    "slots": {
+      "title_slot": 4,
+      "join_button_slot": 2,
+      "leave_button_slot": 2,
+      "create_button_slot": 8,
+      "start_button_slot": 4,
+      "tournaments_start_slot": 18,
+      "leaderboard_1": 10,
+      "leaderboard_2": 11,
+      "leaderboard_3": 12,
+      "leaderboard_4": 13,
+      "leaderboard_5": 14,
+      "leaderboard_6": 15,
+      "leaderboard_7": 16,
+      "stats_book_slot": 0,
+      "recurring_label_slot": 28,
+      "player_label_slot": 37,
+      "recurring_show_all_slot": 34,
+      "player_show_all_slot": 43,
+      "recurring_matches_start": 29,
+      "player_matches_start": 38,
+      "recurring_in_progress_slots": [18, 27, 36],
+      "player_in_progress_slots": [26, 35, 44]
+    },
+    "items": {
+      "join_button": {
+        "item": "minecraft:golden_apple",
+        "name": "Join Tournament",
+        "color": "yellow",
+        "action": "join"
+      },
+      "leave_button": {
+        "item": "minecraft:redstone",
+        "name": "Leave Tournament",
+        "color": "red",
+        "action": "leave"
+      },
+      "create_button": {
+        "item": "minecraft:emerald",
+        "name": "Create Tournament",
+        "color": "green",
+        "action": "create_player"
+      },
+      "start_button": {
+        "item": "minecraft:beacon",
+        "name": "Start Tournament",
+        "color": "aqua",
+        "action": "start"
+      },
+      "back_button": {
+        "item": "minecraft:arrow",
+        "name": "Back",
+        "color": "gray",
+        "action": "back"
+      },
+      "recurring_label": {
+        "item": "minecraft:paper",
+        "name": "Recurring Tournaments",
+        "color": "gold",
+        "action": "none"
+      },
+      "player_label": {
+        "item": "minecraft:paper",
+        "name": "Player Tournaments",
+        "color": "gold",
+        "action": "none"
+      },
+      "recurring_show_all": {
+        "item": "minecraft:book",
+        "name": "Show All Recurring Tournaments",
+        "color": "gold",
+        "action": "show_all_recurring"
+      },
+      "player_show_all": {
+        "item": "minecraft:book",
+        "name": "Show All Player Tournaments",
+        "color": "gold",
+        "action": "show_all_player"
+      },
+      "stats_book": {
+        "item": "minecraft:enchanted_book",
+        "name": "Tournament Stats",
+        "color": "gold",
+        "action": "none"
+      }
+    },
+    "tournament_items": {
+      "player_tournament": {
+        "item": "minecraft:golden_helmet"
+      },
+      "waiting": {
+        "item": "minecraft:paper"
+      },
+      "in_progress": {
+        "item": "minecraft:book"
+      },
+      "ended": {
+        "item": "minecraft:writable_book"
+      },
+      "recurring": {
+        "item": "minecraft:clock"
+      }
+    },
+    "borders": {
+      "outer_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          1, 2, 3, 5, 7, 9, 17, 45, 46, 47, 48, 49, 50, 51, 52, 53
+        ]
+      },
+      "inner_border": {
+        "item": "minecraft:light_blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          19, 20, 21, 22, 23, 24, 25,
+          28,
+          37
+        ]
+      }
+    }
+  },
+  "matches_screen": {
+    "title": "Tournament Matches",
+    "title_item": "minecraft:diamond_sword",
+    "slots": {
+      "title_slot": 4,
+      "back_button_slot": 0,
+      "matches_start_slot": 18
+    },
+    "items": {
+      "scheduled_match": {
+        "item": "minecraft:clock",
+        "name": "Scheduled Match",
+        "color": "aqua"
+      },
+      "in_progress_match": {
+        "item": "minecraft:diamond_sword",
+        "name": "In Progress Match",
+        "color": "gold"
+      },
+      "completed_match": {
+        "item": "minecraft:emerald",
+        "name": "Completed Match",
+        "color": "green"
+      },
+      "cancelled_match": {
+        "item": "minecraft:barrier",
+        "name": "Cancelled Match",
+        "color": "red"
+      }
+    },
+    "borders": {
+      "outer_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 45, 46, 47, 48, 49, 50, 51, 52, 53
+        ]
+      },
+      "inner_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          10, 16, 27, 35, 36, 44
+        ]
+      }
+    }
+  },
+  "creation_screen": {
+    "title": "Create Tournament",
+    "title_item": "minecraft:writable_book",
+    "slots": {
+      "title_slot": 4,
+      "back_button_slot": 0
+    },
+    "items": {
+      "name_field": {
+        "item": "minecraft:name_tag",
+        "name": "Tournament Name",
+        "color": "yellow",
+        "action": "setName"
+      },
+      "min_level_field": {
+        "item": "minecraft:iron_sword",
+        "name": "Min Pokemon Level",
+        "color": "aqua",
+        "action": "setMinLevel"
+      },
+      "max_level_field": {
+        "item": "minecraft:diamond_sword",
+        "name": "Max Pokemon Level",
+        "color": "blue",
+        "action": "setMaxLevel"
+      },
+      "format_field": {
+        "item": "minecraft:bookshelf",
+        "name": "Tournament Format",
+        "color": "light_purple",
+        "action": "setFormat"
+      },
+      "entry_fee_field": {
+        "item": "minecraft:gold_ingot",
+        "name": "Entry Fee",
+        "color": "gold",
+        "action": "setEntryFee"
+      },
+      "max_participants_field": {
+        "item": "minecraft:player_head",
+        "name": "Tournament Size",
+        "color": "green",
+        "action": "setMaxParticipants"
+      },
+      "recurring_field": {
+        "item": "minecraft:diamond_block",
+        "name": "Make Recurring Tournament",
+        "color": "light_purple",
+        "action": "openRecurringCreation"
+      },
+      "recurrence_interval_field": {
+        "item": "minecraft:redstone_lamp",
+        "name": "Recurrence Interval (Hours)",
+        "color": "red",
+        "action": "setRecurrenceInterval"
+      },
+      "create_button": {
+        "item": "minecraft:emerald",
+        "name": "Create Tournament",
+        "color": "green",
+        "action": "createTournament"
+      }
+    },
+    "borders": {
+      "outer_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 50, 51, 52, 53
+        ]
+      }
+    }
+  },
+  "recurring_matches_screen": {
+    "title": "Recurring Tournaments",
+    "title_item": "minecraft:clock",
+    "slots": {
+      "title_slot": 4,
+      "back_button_slot": 0,
+      "matches_start_slot": 9
+    },
+    "items": {
+      "back_button": {
+        "item": "minecraft:arrow",
+        "name": "Back",
+        "color": "gray",
+        "action": "back"
+      }
+    },
+    "borders": {
+      "outer_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          1, 2, 3, 5, 6, 7, 8
+        ]
+      }
+    }
+  },
+  "player_matches_screen": {
+    "title": "Player Tournaments",
+    "title_item": "minecraft:player_head",
+    "slots": {
+      "title_slot": 4,
+      "back_button_slot": 0,
+      "matches_start_slot": 9
+    },
+    "items": {
+      "back_button": {
+        "item": "minecraft:arrow",
+        "name": "Back",
+        "color": "gray",
+        "action": "back"
+      }
+    },
+    "borders": {
+      "outer_border": {
+        "item": "minecraft:blue_stained_glass_pane",
+        "name": " ",
+        "slots": [
+          1, 2, 3, 5, 6, 7, 8
+        ]
+      }
+    }
+  }
+}
