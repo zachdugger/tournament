@@ -5,6 +5,7 @@ import com.blissy.tournaments.config.NotificationConfig;
 import com.blissy.tournaments.config.TournamentsConfig;
 import com.blissy.tournaments.config.UIConfigLoader;
 import com.blissy.tournaments.data.RecurringTournament;
+import com.blissy.tournaments.data.SkinCacheHandler;
 import com.blissy.tournaments.elo.EloManager;
 import com.blissy.tournaments.handlers.RecurringTournamentHandler;
 import com.blissy.tournaments.handlers.TournamentPlayerHandler;
@@ -22,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Mod("tournaments")
 public class Tournaments {
@@ -78,6 +80,7 @@ public class Tournaments {
         LOGGER.info("- BattleTimeoutChecker: Registered for timeout detection");
         LOGGER.info("- ScheduledBattleManager: Registered for battle scheduling");
         LOGGER.info("- RecurringTournamentHandler: Registered for recurring tournaments");
+        LOGGER.info("- SkinCacheHandler: Ready for skin caching");
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -102,6 +105,9 @@ public class Tournaments {
 
         LOGGER.info("Tournament mod initialized on server start");
 
+        // Load skin cache after server is ready
+        SkinCacheHandler.loadCache();
+
         // Make sure match positions are set up
         LOGGER.info("Checking match position teleport locations...");
         try {
@@ -125,16 +131,43 @@ public class Tournaments {
         // Load recurring tournaments
         RecurringTournament.loadRecurringTournaments();
         LOGGER.info("Loaded recurring tournaments");
+
+        // Log data integrity stats on startup
+        try {
+            // Log skin cache stats
+            Map<String, Object> cacheStats = SkinCacheHandler.getCacheStats();
+            LOGGER.info("Skin cache stats: {} cached profiles, {} with skins, cache file exists: {}",
+                    cacheStats.get("cachedProfiles"), cacheStats.get("profilesWithSkins"),
+                    cacheStats.get("cacheFileExists"));
+
+        } catch (Exception e) {
+            LOGGER.warn("Could not perform skin cache integrity check", e);
+        }
     }
 
     @SubscribeEvent
     public void onServerStopping(FMLServerStoppingEvent event) {
-        // Save ELO data on server stop
-        ELO_MANAGER.save();
+        LOGGER.info("Server stopping. Ensuring all tournament data and skin cache is saved...");
 
-        // Save recurring tournaments
-        RecurringTournament.saveRecurringTournaments();
-        LOGGER.info("Saved recurring tournaments");
+        try {
+            // Force save any pending data
+            ELO_MANAGER.save();
+            SkinCacheHandler.forceSave();
+
+            // Save recurring tournaments
+            RecurringTournament.saveRecurringTournaments();
+
+            // Log final stats
+            Map<String, Object> cacheStats = SkinCacheHandler.getCacheStats();
+            LOGGER.info("Final data save completed. Cached profiles: {}",
+                    cacheStats.get("cachedProfiles"));
+            LOGGER.info("Saved recurring tournaments");
+
+        } catch (Exception e) {
+            LOGGER.error("Error during shutdown data save - some data may be lost!", e);
+        }
+
+        LOGGER.info("Tournament system shutdown complete.");
     }
 
     @SubscribeEvent

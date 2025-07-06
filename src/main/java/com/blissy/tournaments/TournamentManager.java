@@ -110,6 +110,9 @@ public class TournamentManager {
      * @param player Player attempting to join
      * @return True if join was successful
      */
+    /**
+     * Enhanced joinTournament method that caches player skin data
+     */
     public boolean joinTournament(String tournamentName, ServerPlayerEntity player) {
         // Check tournament exists
         Tournament tournament = tournaments.get(tournamentName);
@@ -184,13 +187,19 @@ public class TournamentManager {
         if (tournament.addParticipant(player)) {
             playerTournaments.put(player.getUUID(), tournamentName);
 
+            // SKIN CACHING: Cache the player's profile when they join
+            com.blissy.tournaments.data.SkinCacheHandler.cachePlayerProfile(player);
+
+            // Also update cache for all current participants
+            com.blissy.tournaments.data.SkinCacheHandler.updateTournamentParticipantsCache(tournament.getParticipants());
+
             // Fire join event
             MinecraftForge.EVENT_BUS.post(new TournamentEvent.PlayerJoined(tournament, player));
 
-            Tournaments.LOGGER.info("Player {} joined tournament {}",
+            Tournaments.LOGGER.info("Player {} joined tournament {} (skin cached)",
                     player.getName().getString(), tournamentName);
 
-            // Show title to player that they've joined (CHANGED FROM CHAT TO TITLE)
+            // Show title to player that they've joined
             BroadcastUtil.sendTitle(player, "Joined Tournament", TextFormatting.GREEN, 10, 70, 20);
             BroadcastUtil.sendSubtitle(player, tournamentName, TextFormatting.GREEN, 10, 70, 20);
 
@@ -198,6 +207,45 @@ public class TournamentManager {
         }
 
         return false;
+    }
+    /**
+     * Update skin cache for tournament participants
+     * Call this when tournament starts or when checking leaderboards
+     */
+    public void updateTournamentSkinCache(String tournamentName) {
+        Tournament tournament = tournaments.get(tournamentName);
+        if (tournament != null) {
+            com.blissy.tournaments.data.SkinCacheHandler.updateTournamentParticipantsCache(tournament.getParticipants());
+            Tournaments.LOGGER.debug("Updated skin cache for tournament: {}", tournamentName);
+        }
+    }
+    /**
+     * Update skin cache for all active tournaments
+     * This should be called periodically or when the GUI is opened
+     */
+    public void updateAllTournamentSkinCaches() {
+        int totalCached = 0;
+        for (Tournament tournament : tournaments.values()) {
+            if (tournament.getStatus() == Tournament.TournamentStatus.IN_PROGRESS ||
+                    tournament.getStatus() == Tournament.TournamentStatus.WAITING) {
+
+                int sizeBefore = com.blissy.tournaments.data.SkinCacheHandler.getCacheStats()
+                        .get("cachedProfiles") != null ?
+                        (Integer) com.blissy.tournaments.data.SkinCacheHandler.getCacheStats().get("cachedProfiles") : 0;
+
+                com.blissy.tournaments.data.SkinCacheHandler.updateTournamentParticipantsCache(tournament.getParticipants());
+
+                int sizeAfter = com.blissy.tournaments.data.SkinCacheHandler.getCacheStats()
+                        .get("cachedProfiles") != null ?
+                        (Integer) com.blissy.tournaments.data.SkinCacheHandler.getCacheStats().get("cachedProfiles") : 0;
+
+                totalCached += (sizeAfter - sizeBefore);
+            }
+        }
+
+        if (totalCached > 0) {
+            Tournaments.LOGGER.debug("Updated skin cache for {} new tournament participants", totalCached);
+        }
     }
 
     /**

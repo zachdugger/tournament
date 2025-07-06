@@ -3,15 +3,13 @@ package com.blissy.tournaments.gui;
 import com.blissy.tournaments.TournamentManager;
 import com.blissy.tournaments.Tournaments;
 import com.blissy.tournaments.config.UIConfigLoader;
-import com.blissy.tournaments.data.EloPlayer;
-import com.blissy.tournaments.data.RecurringTournament;
-import com.blissy.tournaments.data.Tournament;
-import com.blissy.tournaments.data.TournamentMatch;
-import com.blissy.tournaments.data.TournamentParticipant;
+import com.blissy.tournaments.data.*;
 import com.blissy.tournaments.handlers.RecurringTournamentHandler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -26,6 +24,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -37,10 +36,7 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = "tournaments")
 public class TournamentMainGUI {
@@ -50,9 +46,15 @@ public class TournamentMainGUI {
     private static boolean processingAction = false;
 
     /**
-     * Open the main tournament GUI for a player
+     * Open the main tournament GUI for a player with skin cache updates
      */
     public static void openMainGui(ServerPlayerEntity player) {
+        // Update skin caches before opening GUI
+        TournamentManager.getInstance().updateAllTournamentSkinCaches();
+
+        // Also cache the current player's skin
+        com.blissy.tournaments.data.SkinCacheHandler.cachePlayerProfile(player);
+
         // Get title from config
         JsonObject config = UIConfigLoader.getMainScreenConfig();
         String title = config.has("title") ? config.get("title").getAsString() : "Tournament Management";
@@ -125,6 +127,7 @@ public class TournamentMainGUI {
         });
     }
 
+    // Update the populateMainGui method to use the new leaderboard population:
     private static void populateMainGui(Inventory inventory, ServerPlayerEntity player) {
         JsonObject config = UIConfigLoader.getMainScreenConfig();
         TournamentManager manager = TournamentManager.getInstance();
@@ -268,32 +271,35 @@ public class TournamentMainGUI {
             inventory.setItem(7, reloadButton);
         }
 
+        // USE THE NEW LEADERBOARD POPULATION METHOD WITH PROPER SKIN CACHE
+        populateLeaderboardSlots(inventory, config, player);
+
+        // Add section labels and "Show All" buttons
+        addSectionLabels(inventory, config, player);
+
+        // Populate recurring tournaments - passing config parameter
+        populateRecurringTournamentSlots(inventory, config, player);
+
+        // Populate player tournaments - passing config parameter
+        populatePlayerTournamentSlots(inventory, config, player);
+
+        // Add in-progress tournament displays
+        addInProgressDisplays(inventory, config);
+    }
+    /**
+     * Populate leaderboard slots with player heads using cached skin data
+     */
+    private static void populateLeaderboardSlots(Inventory inventory, JsonObject config, ServerPlayerEntity currentPlayer) {
         // Populate leaderboard slots with player heads (slots 10-16)
         List<EloPlayer> topPlayers = Tournaments.ELO_MANAGER.getTopPlayers(7);
 
         for (int i = 0; i < topPlayers.size() && i < 7; i++) {
-            // Using "topPlayerElo" to avoid naming conflict with "playerElo"
             EloPlayer topPlayerElo = topPlayers.get(i);
             int slot = 10 + i; // Use slots 10-16 directly
 
-            ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+            ItemStack playerHead = createPlayerHeadWithSkin(topPlayerElo.getPlayerId(), topPlayerElo.getPlayerName());
 
-            // Set the correct NBT data to display player skin
-            CompoundNBT skullOwner = new CompoundNBT();
-            skullOwner.putString("Name", topPlayerElo.getPlayerName());
-
-            // UUID is required for proper skin lookup
-            UUID playerUUID = topPlayerElo.getPlayerId();
-
-            // Store UUID in NBT using the correct format for Minecraft 1.16.5
-            CompoundNBT id = new CompoundNBT();
-            id.putLong("M", playerUUID.getMostSignificantBits());
-            id.putLong("L", playerUUID.getLeastSignificantBits());
-            skullOwner.put("Id", id);
-
-            CompoundNBT tag = playerHead.getOrCreateTag();
-            tag.put("SkullOwner", skullOwner);
-
+            // Set the display name and lore
             playerHead.setHoverName(
                     new StringTextComponent("#" + (i + 1) + " " + topPlayerElo.getPlayerName() + " (" + topPlayerElo.getElo() + " ELO)")
                             .withStyle(TextFormatting.GOLD)
@@ -316,19 +322,98 @@ public class TournamentMainGUI {
             TournamentGuiHandler.setItemLore(playerHead, lore);
             inventory.setItem(slot, playerHead);
         }
-
-        // Add section labels and "Show All" buttons
-        addSectionLabels(inventory, config, player);
-
-        // Populate recurring tournaments - passing config parameter
-        populateRecurringTournamentSlots(inventory, config, player);
-
-        // Populate player tournaments - passing config parameter
-        populatePlayerTournamentSlots(inventory, config, player);
-
-        // Add in-progress tournament displays
-        addInProgressDisplays(inventory, config);
     }
+    /**
+     * Create a player head ItemStack with proper skin data
+     * Uses the skin cache to get complete GameProfile with textures
+     */
+    private static ItemStack createPlayerHeadWithSkin(UUID playerId, String playerName) {
+        ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+        MinecraftServer server = net.minecraftforge.fml.server.ServerLifecycleHooks.getCurrentServer();
+
+        // Try to get the best available profile (cached or from server)
+        GameProfile profile = SkinCacheHandler.getBestProfile(playerId, server);
+
+        if (profile != null && profile.getProperties().size() > 0) {
+            // We have a complete profile with skin data - use it directly
+            CompoundNBT tag = playerHead.getOrCreateTag();
+
+            // Create skull owner NBT from the complete GameProfile
+            CompoundNBT skullOwner = new CompoundNBT();
+            skullOwner.putString("Name", profile.getName());
+
+            // Set UUID in the correct format for 1.16.5
+            CompoundNBT idTag = new CompoundNBT();
+            idTag.putLong("M", profile.getId().getMostSignificantBits());
+            idTag.putLong("L", profile.getId().getLeastSignificantBits());
+            skullOwner.put("Id", idTag);
+
+            // Add properties (this is the key part that includes skin textures)
+            if (!profile.getProperties().isEmpty()) {
+                CompoundNBT properties = new CompoundNBT();
+
+                for (Map.Entry<String, Collection<Property>> entry : profile.getProperties().asMap().entrySet()) {
+                    String propertyName = entry.getKey();
+                    Collection<com.mojang.authlib.properties.Property> propertyValues = entry.getValue();
+
+                    if (!propertyValues.isEmpty()) {
+                        // Create list of property values
+                        ListNBT propertyList = new ListNBT();
+
+                        for (com.mojang.authlib.properties.Property property : propertyValues) {
+                            CompoundNBT propertyTag = new CompoundNBT();
+                            propertyTag.putString("Value", property.getValue());
+
+                            if (property.getSignature() != null) {
+                                propertyTag.putString("Signature", property.getSignature());
+                            }
+
+                            propertyList.add(propertyTag);
+                        }
+
+                        properties.put(propertyName, propertyList);
+                    }
+                }
+
+                if (!properties.isEmpty()) {
+                    skullOwner.put("Properties", properties);
+                }
+            }
+
+            tag.put("SkullOwner", skullOwner);
+
+            Tournaments.LOGGER.debug("Created player head for {} with complete skin data (properties: {})",
+                    profile.getName(), profile.getProperties().size());
+
+        } else {
+            // Fallback to basic head if no profile available
+            Tournaments.LOGGER.debug("No cached profile available for {}, using basic player head", playerName);
+
+            CompoundNBT tag = playerHead.getOrCreateTag();
+            CompoundNBT skullOwner = new CompoundNBT();
+            skullOwner.putString("Name", playerName);
+
+            // Set UUID in the correct format for 1.16.5
+            CompoundNBT idTag = new CompoundNBT();
+            idTag.putLong("M", playerId.getMostSignificantBits());
+            idTag.putLong("L", playerId.getLeastSignificantBits());
+            skullOwner.put("Id", idTag);
+
+            tag.put("SkullOwner", skullOwner);
+
+            // Try to cache this player's profile for next time if they're online
+            if (server != null) {
+                ServerPlayerEntity onlinePlayer = server.getPlayerList().getPlayer(playerId);
+                if (onlinePlayer != null) {
+                    SkinCacheHandler.cachePlayerProfile(onlinePlayer);
+                    Tournaments.LOGGER.debug("Cached profile for online player: {}", playerName);
+                }
+            }
+        }
+
+        return playerHead;
+    }
+
 
     /**
      * Add in-progress tournament displays in specified slots
