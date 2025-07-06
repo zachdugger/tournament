@@ -14,6 +14,7 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.api.storage.StorageProxy;
 import com.pixelmonmod.pixelmon.battles.BattleRegistry;
 import com.pixelmonmod.pixelmon.api.battles.BattleResults;
+import com.pixelmonmod.pixelmon.api.battles.BattleEndCause;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -407,13 +408,145 @@ public class PixelmonHandler {
             // Debug log that the event was triggered
             Tournaments.LOGGER.info("Battle end event triggered. Battle controller: {}", bc.battleIndex);
 
-            // Just remove from tracking - we rely on the tick handler to check match results
-            if (tournamentBattles.containsKey(bc.battleIndex)) {
-                tournamentBattles.remove(bc.battleIndex);
-                Tournaments.LOGGER.info("Removed battle {} from tracking", bc.battleIndex);
+            // Check if this was a tournament battle
+            BattleInfo battleInfo = tournamentBattles.get(bc.battleIndex);
+            if (battleInfo == null) {
+                Tournaments.LOGGER.info("Battle {} was not a tracked tournament battle", bc.battleIndex);
+                return;
             }
+
+            // This was a tournament battle, check for forfeit/flee
+            BattleEndCause endCause = event.getCause();
+            boolean wasForfeit = false;
+            UUID forfeitPlayerId = null;
+
+            Tournaments.LOGGER.info("Tournament battle ended. Cause: {}, Abnormal: {}", endCause, event.isAbnormal());
+
+            // Check if it was a forfeit/flee
+            if (endCause == BattleEndCause.FORFEIT || endCause == BattleEndCause.FLEE) {
+                wasForfeit = true;
+                Tournaments.LOGGER.info("Battle ended due to forfeit/flee");
+
+                // Try to determine who forfeited by checking battle results
+                Map<BattleParticipant, BattleResults> results = event.getResults();
+
+                for (Map.Entry<BattleParticipant, BattleResults> entry : results.entrySet()) {
+                    BattleParticipant participant = entry.getKey();
+                    BattleResults result = entry.getValue();
+
+                    if (participant instanceof PlayerParticipant) {
+                        PlayerParticipant playerParticipant = (PlayerParticipant) participant;
+                        UUID playerId = playerParticipant.player.getUUID();
+
+                        // Check if this player forfeited (has a loss result)
+                        if (result == BattleResults.DEFEAT || result == BattleResults.FLEE) {
+                            forfeitPlayerId = playerId;
+                            Tournaments.LOGGER.info("Player {} forfeited the battle", playerParticipant.player.getName().getString());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Handle forfeit case
+            if (wasForfeit && forfeitPlayerId != null) {
+                handleForfeit(battleInfo, forfeitPlayerId);
+            } else {
+                // Normal battle end - let the tick handler process it
+                Tournaments.LOGGER.info("Normal battle end, will be processed by tick handler");
+            }
+
+            // Remove from tracking
+            tournamentBattles.remove(bc.battleIndex);
+            Tournaments.LOGGER.info("Removed battle {} from tracking", bc.battleIndex);
+
         } catch (Exception e) {
             Tournaments.LOGGER.error("Error in battle end event", e);
+        }
+    }
+
+    /**
+     * Handle a forfeit in a tournament battle
+     */
+    private static void handleForfeit(BattleInfo battleInfo, UUID forfeitPlayerId) {
+        try {
+            TournamentManager manager = TournamentManager.getInstance();
+            Tournament tournament = manager.getTournament(battleInfo.tournamentName);
+
+            if (tournament == null) {
+                Tournaments.LOGGER.error("Tournament {} not found when handling forfeit", battleInfo.tournamentName);
+                return;
+            }
+
+            // Determine winner and loser
+            UUID winnerId, loserId;
+            if (forfeitPlayerId.equals(battleInfo.player1Id)) {
+                // Player 1 forfeited, Player 2 wins
+                winnerId = battleInfo.player2Id;
+                loserId = battleInfo.player1Id;
+            } else {
+                // Player 2 forfeited, Player 1 wins
+                winnerId = battleInfo.player1Id;
+                loserId = battleInfo.player2Id;
+            }
+
+            // Get player names
+            String winnerName = "Unknown";
+            String loserName = "Unknown";
+
+            for (TournamentParticipant participant : tournament.getParticipants()) {
+                if (participant.getPlayerId().equals(winnerId)) {
+                    winnerName = participant.getPlayerName();
+                } else if (participant.getPlayerId().equals(loserId)) {
+                    loserName = participant.getPlayerName();
+                }
+            }
+
+            Tournaments.LOGGER.info("Forfeit detected: {} forfeited to {}", loserName, winnerName);
+
+            // Record the match result
+            boolean resultRecorded = tournament.recordMatchResult(winnerId, loserId);
+
+            if (resultRecorded) {
+                // Update ELO ratings
+                Tournaments.ELO_MANAGER.recordMatch(winnerId, loserId);
+
+                // Notify players
+                ServerPlayerEntity winner = null;
+                ServerPlayerEntity loser = null;
+
+                for (TournamentParticipant participant : tournament.getParticipants()) {
+                    if (participant.getPlayerId().equals(winnerId)) {
+                        winner = participant.getPlayer();
+                    } else if (participant.getPlayerId().equals(loserId)) {
+                        loser = participant.getPlayer();
+                    }
+                }
+
+                if (winner != null) {
+                    winner.sendMessage(
+                            new StringTextComponent("You won the tournament match! " + loserName + " forfeited.")
+                                    .withStyle(TextFormatting.GREEN),
+                            winner.getUUID());
+                }
+
+                if (loser != null) {
+                    loser.sendMessage(
+                            new StringTextComponent("You forfeited the tournament match against " + winnerName + ". You have been eliminated.")
+                                    .withStyle(TextFormatting.RED),
+                            loser.getUUID());
+                }
+
+                // Broadcast the forfeit result
+                tournament.broadcastMessage(loserName + " forfeited to " + winnerName + " and has been eliminated!");
+
+                Tournaments.LOGGER.info("Successfully processed forfeit: {} advances, {} eliminated", winnerName, loserName);
+            } else {
+                Tournaments.LOGGER.error("Failed to record forfeit result");
+            }
+
+        } catch (Exception e) {
+            Tournaments.LOGGER.error("Error handling forfeit", e);
         }
     }
 

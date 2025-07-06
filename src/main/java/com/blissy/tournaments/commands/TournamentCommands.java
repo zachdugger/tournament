@@ -261,10 +261,8 @@ public class TournamentCommands {
                                             // Get the tournament
                                             Tournament tournament = TournamentManager.getInstance().getTournament(tournamentName);
                                             if (tournament == null) {
-                                                player.sendMessage(
-                                                        new StringTextComponent("Tournament not found: " + tournamentName)
-                                                                .withStyle(TextFormatting.RED),
-                                                        player.getUUID());
+                                                BroadcastUtil.sendTitle(player, "Tournament Not Found", TextFormatting.RED, 15, 100, 25);
+                                                BroadcastUtil.sendSubtitle(player, tournamentName, TextFormatting.RED, 15, 100, 25);
                                                 return 0;
                                             }
 

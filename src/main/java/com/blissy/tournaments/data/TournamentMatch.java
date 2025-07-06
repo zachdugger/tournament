@@ -52,13 +52,13 @@ public class TournamentMatch {
         ServerPlayerEntity player2 = findPlayer(player2Id);
 
         if (player1 != null) {
-            BroadcastUtil.sendTitle(player1, "Match Started", TextFormatting.GOLD, 10, 60, 20);
-            BroadcastUtil.sendSubtitle(player1, "VS " + player2Name, TextFormatting.YELLOW, 10, 60, 20);
+            BroadcastUtil.sendTitle(player1, "Match Started", TextFormatting.GOLD, 15, 100, 25);
+            BroadcastUtil.sendSubtitle(player1, "VS " + player2Name, TextFormatting.YELLOW, 15, 100, 25);
         }
 
         if (player2 != null) {
-            BroadcastUtil.sendTitle(player2, "Match Started", TextFormatting.GOLD, 10, 60, 20);
-            BroadcastUtil.sendSubtitle(player2, "VS " + player1Name, TextFormatting.YELLOW, 10, 60, 20);
+            BroadcastUtil.sendTitle(player2, "Match Started", TextFormatting.GOLD, 15, 100, 25);
+            BroadcastUtil.sendSubtitle(player2, "VS " + player1Name, TextFormatting.YELLOW, 15, 100, 25);
         }
     }
 
@@ -84,13 +84,13 @@ public class TournamentMatch {
             ServerPlayerEntity loser = findPlayer(loserId);
 
             if (winner != null) {
-                BroadcastUtil.sendTitle(winner, "Victory!", TextFormatting.GREEN, 10, 60, 20);
-                BroadcastUtil.sendSubtitle(winner, "You defeated " + loserName, TextFormatting.YELLOW, 10, 60, 20);
+                BroadcastUtil.sendTitle(winner, "Victory!", TextFormatting.GREEN, 15, 100, 25);
+                BroadcastUtil.sendSubtitle(winner, "You defeated " + loserName, TextFormatting.YELLOW, 15, 100, 25);
             }
 
             if (loser != null) {
-                BroadcastUtil.sendTitle(loser, "Defeat", TextFormatting.RED, 10, 60, 20);
-                BroadcastUtil.sendSubtitle(loser, winnerName + " has won", TextFormatting.YELLOW, 10, 60, 20);
+                BroadcastUtil.sendTitle(loser, "Defeat", TextFormatting.RED, 15, 100, 25);
+                BroadcastUtil.sendSubtitle(loser, winnerName + " has won", TextFormatting.YELLOW, 15, 100, 25);
             }
 
             return true;
@@ -110,11 +110,11 @@ public class TournamentMatch {
         ServerPlayerEntity player2 = findPlayer(player2Id);
 
         if (player1 != null) {
-            BroadcastUtil.sendTitle(player1, "Match Cancelled", TextFormatting.RED, 10, 60, 20);
+            BroadcastUtil.sendTitle(player1, "Match Cancelled", TextFormatting.RED, 15, 100, 25);
         }
 
         if (player2 != null) {
-            BroadcastUtil.sendTitle(player2, "Match Cancelled", TextFormatting.RED, 10, 60, 20);
+            BroadcastUtil.sendTitle(player2, "Match Cancelled", TextFormatting.RED, 15, 100, 25);
         }
     }
 

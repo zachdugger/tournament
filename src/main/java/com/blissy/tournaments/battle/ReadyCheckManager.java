@@ -34,7 +34,7 @@ public class ReadyCheckManager {
         // Find the player's current match
         TournamentMatch match = findPlayerCurrentMatch(playerId, tournament);
         if (match == null) {
-            BroadcastUtil.sendTitle(player, "No Active Match", TextFormatting.RED, 10, 70, 20);
+            BroadcastUtil.sendTitle(player, "No Active Match", TextFormatting.RED, 15, 100, 25);
             return false;
         }
 
@@ -56,7 +56,7 @@ public class ReadyCheckManager {
         }
 
         // Notify players
-        BroadcastUtil.sendTitle(player, "Ready!", TextFormatting.GREEN, 10, 70, 20);
+        BroadcastUtil.sendTitle(player, "Ready!", TextFormatting.GREEN, 15, 100, 25);
 
         // Check if opponent is also ready
         if (readyPlayers.getOrDefault(opponentId, false)) {
@@ -94,17 +94,17 @@ public class ReadyCheckManager {
 
                 return true;
             } else {
-                BroadcastUtil.sendTitle(player, "Opponent Offline", TextFormatting.RED, 10, 70, 20);
-                BroadcastUtil.sendSubtitle(player, "Please wait for them to reconnect", TextFormatting.RED, 10, 70, 20);
+                BroadcastUtil.sendTitle(player, "Opponent Offline", TextFormatting.RED, 15, 100, 25);
+                BroadcastUtil.sendSubtitle(player, "Please wait for them to reconnect", TextFormatting.RED, 15, 100, 25);
                 return false;
             }
         } else {
             // Opponent not ready yet
-            BroadcastUtil.sendSubtitle(player, "Waiting for opponent...", TextFormatting.YELLOW, 10, 70, 20);
+            BroadcastUtil.sendSubtitle(player, "Waiting for opponent...", TextFormatting.YELLOW, 15, 100, 25);
 
             if (opponent != null) {
-                BroadcastUtil.sendTitle(opponent, player.getName().getString() + " is Ready", TextFormatting.YELLOW, 10, 70, 20);
-                BroadcastUtil.sendSubtitle(opponent, "Type /tournament ready when you're ready", TextFormatting.YELLOW, 10, 70, 20);
+                BroadcastUtil.sendTitle(opponent, player.getName().getString() + " is Ready", TextFormatting.YELLOW, 15, 100, 25);
+                BroadcastUtil.sendSubtitle(opponent, "Type /tournament ready when you're ready", TextFormatting.YELLOW, 15, 100, 25);
             }
 
             return false;

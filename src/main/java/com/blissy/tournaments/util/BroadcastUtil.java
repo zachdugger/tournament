@@ -16,7 +16,7 @@ public class BroadcastUtil {
 
     /**
      * Send a compact title message (centered screen text with improved styling)
-     * Uses smaller display timing for less intrusive appearance
+     * Extended duration to ensure 3-5 second visibility
      */
     public static void sendTitle(ServerPlayerEntity player, String message, TextFormatting color, int fadeIn, int stay, int fadeOut) {
         if (player == null) return;
@@ -32,6 +32,7 @@ public class BroadcastUtil {
 
     /**
      * Send a compact subtitle message (smaller text below title)
+     * Extended duration to ensure 3-5 second visibility
      */
     public static void sendSubtitle(ServerPlayerEntity player, String message, TextFormatting color, int fadeIn, int stay, int fadeOut) {
         if (player == null) return;
@@ -47,7 +48,7 @@ public class BroadcastUtil {
 
     /**
      * Send an actionbar message (text above hotbar)
-     * This is the smallest on-screen text option in vanilla Minecraft
+     * Extended duration to ensure 3-5 second visibility
      */
     public static void sendActionBar(ServerPlayerEntity player, String message, TextFormatting color) {
         if (player == null) return;
@@ -56,13 +57,13 @@ public class BroadcastUtil {
         Style style = Style.EMPTY.withColor(color);
         ITextComponent text = new StringTextComponent(message).setStyle(style);
 
-        // Use shorter display duration for less intrusive notifications
-        player.connection.send(new STitlePacket(STitlePacket.Type.ACTIONBAR, text, 5, 60, 10));
+        // Extended duration for better visibility (5 seconds total)
+        player.connection.send(new STitlePacket(STitlePacket.Type.ACTIONBAR, text, 10, 100, 10));
     }
 
     /**
      * Send a notification actionbar message (for important updates)
-     * Uses brighter colors and longer duration
+     * Uses brighter colors and longer duration (5 seconds)
      */
     public static void sendNotificationBar(ServerPlayerEntity player, String message) {
         if (player == null) return;
@@ -73,18 +74,19 @@ public class BroadcastUtil {
                 .withBold(true);
 
         ITextComponent text = new StringTextComponent("⚡ " + message + " ⚡").setStyle(style);
-        player.connection.send(new STitlePacket(STitlePacket.Type.ACTIONBAR, text, 10, 80, 20));
+        // Extended duration for important notifications (6 seconds total)
+        player.connection.send(new STitlePacket(STitlePacket.Type.ACTIONBAR, text, 15, 120, 25));
     }
 
     /**
      * Send a mini title - smaller and less intrusive than a full title
-     * Good for status updates
+     * Good for status updates, extended to 4 seconds
      */
     public static void sendMiniTitle(ServerPlayerEntity player, String message, TextFormatting color) {
         if (player == null) return;
 
-        // Short duration, minimal title
-        sendTitle(player, message, color, 5, 30, 5);
+        // Extended duration for mini titles (4 seconds total)
+        sendTitle(player, message, color, 10, 80, 10);
     }
 
     /**
@@ -98,7 +100,7 @@ public class BroadcastUtil {
 
     /**
      * Run countdown sequence for player
-     * Uses compact styling for less screen space
+     * Uses compact styling for less screen space with extended visibility
      */
     public static void runCountdown(ServerPlayerEntity player, String message, int seconds, Runnable onComplete) {
         if (player == null) return;
@@ -106,8 +108,8 @@ public class BroadcastUtil {
         // Clear any existing titles
         clearTitles(player);
 
-        // Start with the message
-        sendMiniTitle(player, message, TextFormatting.GOLD);
+        // Start with the message - extended duration for better visibility
+        sendTitle(player, message, TextFormatting.GOLD, 10, 80, 10);
 
         // Set up the countdown with timed tasks
         for (int i = seconds; i > 0; i--) {
@@ -115,9 +117,9 @@ public class BroadcastUtil {
             player.getServer().tell(new net.minecraft.util.concurrent.TickDelayedTask(
                     (seconds - i) * 20, // 20 ticks = 1 second
                     () -> {
-                        // Show countdown number with decreasing duration as it gets closer to zero
-                        int stay = Math.max(5, count * 4);
-                        sendTitle(player, String.valueOf(count), TextFormatting.RED, 0, stay, 5);
+                        // Show countdown number with extended duration
+                        int stay = Math.max(15, count * 6); // Minimum 15 ticks, scale with count
+                        sendTitle(player, String.valueOf(count), TextFormatting.RED, 0, stay, 10);
 
                         if (count == 1 && onComplete != null) {
                             // Execute completion task after 1 second

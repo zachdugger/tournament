@@ -114,8 +114,8 @@ public class Tournament {
         broadcastActionBar(player.getName().getString() + " has joined the tournament!");
 
         // Show welcome message to the joining player
-        BroadcastUtil.sendTitle(player, "Joined Tournament", TextFormatting.GREEN, 10, 70, 20);
-        BroadcastUtil.sendSubtitle(player, name, TextFormatting.YELLOW, 10, 70, 20);
+        BroadcastUtil.sendTitle(player, "Joined Tournament", TextFormatting.GREEN, 15, 100, 25);
+        BroadcastUtil.sendSubtitle(player, name, TextFormatting.YELLOW, 15, 100, 25);
 
         return true;
     }
@@ -151,8 +151,8 @@ public class Tournament {
         broadcastActionBar(player.getName().getString() + " has left the tournament");
 
         // Send leave confirmation to player
-        BroadcastUtil.sendTitle(player, "Left Tournament", TextFormatting.YELLOW, 10, 70, 20);
-        BroadcastUtil.sendSubtitle(player, name, TextFormatting.YELLOW, 10, 70, 20);
+        BroadcastUtil.sendTitle(player, "Left Tournament", TextFormatting.YELLOW, 15, 100, 25);
+        BroadcastUtil.sendSubtitle(player, name, TextFormatting.YELLOW, 15, 100, 25);
 
         // If host leaves, assign new host
         if (playerId.equals(hostId) && !participants.isEmpty()) {
@@ -160,8 +160,8 @@ public class Tournament {
             // Notify the new host
             ServerPlayerEntity newHost = participants.get(newHostId).getPlayer();
             if (newHost != null) {
-                BroadcastUtil.sendTitle(newHost, "You Are Now Host", TextFormatting.GOLD, 10, 70, 20);
-                BroadcastUtil.sendSubtitle(newHost, "Previous host left the tournament", TextFormatting.YELLOW, 10, 70, 20);
+                BroadcastUtil.sendTitle(newHost, "You Are Now Host", TextFormatting.GOLD, 15, 100, 25);
+                BroadcastUtil.sendSubtitle(newHost, "Previous host left the tournament", TextFormatting.YELLOW, 15, 100, 25);
             }
         }
 
@@ -292,12 +292,12 @@ public class Tournament {
                                             // Highlight their match with a title
                                             BroadcastUtil.sendTitle(player,
                                                     "Your Match: #" + ((matchIndex/2) + 1),
-                                                    TextFormatting.GOLD, 10, 60, 10);
+                                                    TextFormatting.GOLD, 15, 100, 25);
 
                                             String opponent = player.getName().getString().equals(player1) ? player2 : player1;
                                             BroadcastUtil.sendSubtitle(player,
                                                     "VS " + opponent,
-                                                    TextFormatting.AQUA, 10, 60, 10);
+                                                    TextFormatting.AQUA, 15, 100, 25);
                                         } else {
                                             // For other players, just show the match in action bar
                                             BroadcastUtil.sendActionBar(player,
@@ -317,11 +317,11 @@ public class Tournament {
                                             // Special notification for the player getting the bye
                                             BroadcastUtil.sendTitle(playerEntity,
                                                     "You Got a Bye!",
-                                                    TextFormatting.GREEN, 10, 60, 10);
+                                                    TextFormatting.GREEN, 15, 100, 25);
 
                                             BroadcastUtil.sendSubtitle(playerEntity,
                                                     "Automatically advance to next round",
-                                                    TextFormatting.YELLOW, 10, 60, 10);
+                                                    TextFormatting.YELLOW, 15, 100, 25);
                                         } else {
                                             // For other players
                                             BroadcastUtil.sendActionBar(playerEntity,
@@ -380,23 +380,23 @@ public class Tournament {
                     }
 
                     // Special notification for match participants
-                    BroadcastUtil.sendTitle(p1, "Match Started", TextFormatting.GOLD, 10, 60, 20);
-                    BroadcastUtil.sendSubtitle(p1, "VS " + p2.getName().getString(), TextFormatting.YELLOW, 10, 60, 20);
+                    BroadcastUtil.sendTitle(p1, "Match Started", TextFormatting.GOLD, 15, 100, 25);
+                    BroadcastUtil.sendSubtitle(p1, "VS " + p2.getName().getString(), TextFormatting.YELLOW, 15, 100, 25);
 
-                    BroadcastUtil.sendTitle(p2, "Match Started", TextFormatting.GOLD, 10, 60, 20);
-                    BroadcastUtil.sendSubtitle(p2, "VS " + p1.getName().getString(), TextFormatting.YELLOW, 10, 60, 20);
+                    BroadcastUtil.sendTitle(p2, "Match Started", TextFormatting.GOLD, 15, 100, 25);
+                    BroadcastUtil.sendSubtitle(p2, "VS " + p1.getName().getString(), TextFormatting.YELLOW, 15, 100, 25);
 
                     // After 3 seconds, show the ready command instruction with enhanced visibility
                     if (p1.getServer() != null) {
                         p1.getServer().tell(new net.minecraft.util.concurrent.TickDelayedTask(60, () -> {
                             // More prominent ready notification with longer duration
-                            BroadcastUtil.sendTitle(p1, "Type /tournament ready", TextFormatting.GREEN, 10, 100, 20);
+                            BroadcastUtil.sendTitle(p1, "Type /tournament ready", TextFormatting.GREEN, 15, 120, 25);
                             BroadcastUtil.sendSubtitle(p1, "to start your match against " + p2.getName().getString(),
-                                    TextFormatting.YELLOW, 10, 100, 20);
+                                    TextFormatting.YELLOW, 15, 120, 25);
 
-                            BroadcastUtil.sendTitle(p2, "Type /tournament ready", TextFormatting.GREEN, 10, 100, 20);
+                            BroadcastUtil.sendTitle(p2, "Type /tournament ready", TextFormatting.GREEN, 15, 120, 25);
                             BroadcastUtil.sendSubtitle(p2, "to start your match against " + p1.getName().getString(),
-                                    TextFormatting.YELLOW, 10, 100, 20);
+                                    TextFormatting.YELLOW, 15, 120, 25);
 
                             // Send periodic reminders if players haven't used the ready command
                             p1.getServer().tell(new net.minecraft.util.concurrent.TickDelayedTask(200, () -> {
@@ -420,8 +420,8 @@ public class Tournament {
                 // Notify the player who got a bye
                 ServerPlayerEntity byePlayer = player.getPlayer();
                 if (byePlayer != null) {
-                    BroadcastUtil.sendTitle(byePlayer, "You Got a Bye", TextFormatting.GREEN, 10, 60, 20);
-                    BroadcastUtil.sendSubtitle(byePlayer, "Advancing to next round", TextFormatting.YELLOW, 10, 60, 20);
+                    BroadcastUtil.sendTitle(byePlayer, "You Got a Bye", TextFormatting.GREEN, 15, 100, 25);
+                    BroadcastUtil.sendSubtitle(byePlayer, "Advancing to next round", TextFormatting.YELLOW, 15, 100, 25);
                 }
             }
         }
@@ -458,8 +458,8 @@ public class Tournament {
             Tournaments.LOGGER.info("Teleporting eliminated player {} to exit point", playerName);
 
             // Show elimination message
-            BroadcastUtil.sendTitle(player, "Eliminated", TextFormatting.RED, 10, 70, 20);
-            BroadcastUtil.sendSubtitle(player, "You are out of the tournament", TextFormatting.YELLOW, 10, 70, 20);
+            BroadcastUtil.sendTitle(player, "Eliminated", TextFormatting.RED, 15, 100, 25);
+            BroadcastUtil.sendSubtitle(player, "You are out of the tournament", TextFormatting.YELLOW, 15, 100, 25);
 
             boolean success = TeleportUtil.teleportToExitPoint(player);
             if (!success) {
@@ -507,8 +507,8 @@ public class Tournament {
                 // Show winning message to the winner
                 ServerPlayerEntity winner = lastActive.getPlayer();
                 if (winner != null) {
-                    BroadcastUtil.sendTitle(winner, "Victory!", TextFormatting.GOLD, 10, 100, 20);
-                    BroadcastUtil.sendSubtitle(winner, "You are the tournament champion", TextFormatting.YELLOW, 10, 100, 20);
+                    BroadcastUtil.sendTitle(winner, "Victory!", TextFormatting.GOLD, 20, 120, 30);
+                    BroadcastUtil.sendSubtitle(winner, "You are the tournament champion", TextFormatting.YELLOW, 20, 120, 30);
                 }
 
                 end();
@@ -689,8 +689,8 @@ public class Tournament {
                 // Show winning message to the winner
                 ServerPlayerEntity winnerPlayer = winner.getPlayer();
                 if (winnerPlayer != null) {
-                    BroadcastUtil.sendTitle(winnerPlayer, "Victory!", TextFormatting.GOLD, 10, 100, 20);
-                    BroadcastUtil.sendSubtitle(winnerPlayer, "You are the tournament champion", TextFormatting.YELLOW, 10, 100, 20);
+                    BroadcastUtil.sendTitle(winnerPlayer, "Victory!", TextFormatting.GOLD, 20, 120, 30);
+                    BroadcastUtil.sendSubtitle(winnerPlayer, "You are the tournament champion", TextFormatting.YELLOW, 20, 120, 30);
                 }
             }
             end();
@@ -744,6 +744,8 @@ public class Tournament {
                 if (TournamentsConfig.COMMON.enableRewards.get()) {
                     // Implement reward logic here
                     BroadcastUtil.sendActionBar(playerEntity, "You've received tournament rewards!", TextFormatting.GOLD);
+                    BroadcastUtil.sendTitle(playerEntity, "Victory!", TextFormatting.GOLD, 20, 150, 30);
+                    BroadcastUtil.sendSubtitle(playerEntity, "You are the tournament champion", TextFormatting.YELLOW, 20, 150, 30);
                 }
             }
         } else {
